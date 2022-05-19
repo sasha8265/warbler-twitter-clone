@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, UserUpdateForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -81,6 +81,7 @@ def signup():
             return render_template('users/signup.html', form=form)
 
         do_login(user)
+        session['user_id'] = user.id
 
         return redirect("/")
 
@@ -101,6 +102,7 @@ def login():
         if user:
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
+            session['user_id'] = user.id
             return redirect("/")
 
         flash("Invalid credentials.", 'danger')
@@ -112,8 +114,9 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    username = db.session.get_or_404()
-    session.pop('user_id')
+    # user = db.session.get_or_404()
+    # session.pop('user_id')
+    do_logout()
     flash(f"Goodbye!")
     return redirect('/login')
 
@@ -209,11 +212,46 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+@app.route('/users/<int:user_id>/update', methods=["GET", "POST"])
+def profile(user_id):
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    user = User.query.get_or_404(user_id)
+    form = UserUpdateForm(obj=user)
+    
+    print("*************************************")
+    print(user.id)
+    print(session[CURR_USER_KEY])
+    print("*************************************")
+    
+    if user.id != session[CURR_USER_KEY] or CURR_USER_KEY not in session:
+        flash("Access unauthorized.", "danger")
+        return redirect('/')
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data,
+                                 form.password.data)
+
+        if not user:
+            flash("Invalid credentials.", 'danger')
+
+        else:
+            user.email = form.email.data
+            user.username = form.username.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+            user.location = form.location.data
+            
+            db.session.commit()
+            
+            flash("Successfully Updated!", 'success')
+            return redirect(f"/users/{user.id}")
+    
+    return render_template('users/edit.html', form=form, user=user)
+            
+
+        
 
 
 @app.route('/users/delete', methods=["POST"])
