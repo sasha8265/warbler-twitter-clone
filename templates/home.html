@@ -42,7 +42,7 @@
       <ul class="list-group" id="messages">
             {% for message in g.user.messages %}
                 <li class="list-group-item">
-                    <a href="/messages/{{ message.id  }}" class="message-link" />
+                    <a href="/messages/{{ message.id }}" class="message-link" />
                     <a href="/users/{{ g.user.id }}">
                         <img src="{{ g.user.image_url }}" alt="" class="timeline-image">
                     </a>
@@ -57,7 +57,7 @@
             {% for message in messages %}
                 
                 <li class="list-group-item">
-                    <a href="/messages/{{ message.id  }}" class="message-link"/>
+                    <a href="/messages/{{ message.id }}" class="message-link"/>
                     <a href="/users/{{ message.user.id }}">
                     <img src="{{ message.user.image_url }}" alt="" class="timeline-image">
                     </a>

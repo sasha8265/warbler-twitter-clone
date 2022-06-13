@@ -130,6 +130,8 @@ class User(db.Model):
         found_user_list = [user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
+
+
     @classmethod
     def signup(cls, username, email, password, image_url):
         """Sign up user.
@@ -199,10 +201,12 @@ class Message(db.Model):
 
     user = db.relationship('User')
 
+    def __repr__(self):
+        return f"<Message #{self.id}: user: {self.user.username}, {self.timestamp}>"
+
 
 def connect_db(app):
     """Connect this database to provided Flask app.
-
     You should call this in your Flask app.
     """
 
